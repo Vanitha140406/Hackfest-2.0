@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Student & Staff Login - Campus Bites{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 40px; margin-bottom: 8px;">🔐</div>
+        <h2 style="font-size: 24px; font-weight: 800;">Welcome Back</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Sign in to pre-order food & track your tokens</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Enter college roll no. or username" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 16px;">Sign In</button>
+    </form>
+
+    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 14px;">
+        <p>New student? <a href="{{ url_for('register') }}" style="color: var(--primary); font-weight: 700; text-decoration: none;">Create an Account</a></p>
+    </div>
+
+    <div style="margin-top: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; font-size: 13px; color: #475569;">
+        <strong>🔑 Demo Credentials:</strong><br>
+        • Canteen Admin: <code>admin</code> / <code>admin123</code><br>
+        • Demo Student: <code>student</code> / <code>student123</code>
+    </div>
+</div>
+{% endblock %}

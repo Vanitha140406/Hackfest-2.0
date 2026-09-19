@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ item.name }} - Admin - Campus Bites{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 550px;">
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('manage_food') }}" style="color: var(--text-muted); text-decoration: none; font-size: 13px;">← Back to Food Catalog</a>
+        <h2 style="font-size: 22px; font-weight: 800; margin-top: 8px;">Edit Food Item</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Update details, category, or pricing for {{ item.name }}</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('edit_food', food_id=item.id) }}">
+        <div class="form-group">
+            <label for="name">Food Name</label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ item.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" class="form-control" required>
+                <option value="Meals" {% if item.category == 'Meals' %}selected{% endif %}>🍛 Meals</option>
+                <option value="Snacks" {% if item.category == 'Snacks' %}selected{% endif %}>🥪 Snacks</option>
+                <option value="Fast Food" {% if item.category == 'Fast Food' %}selected{% endif %}>🍔 Fast Food</option>
+                <option value="Desserts" {% if item.category == 'Desserts' %}selected{% endif %}>🍰 Desserts</option>
+                <option value="Beverages" {% if item.category == 'Beverages' %}selected{% endif %}>🥤 Beverages</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="price">Price in INR (₹)</label>
+            <input type="number" step="1" min="1" id="price" name="price" class="form-control" value="{{ "%.0f"|format(item.price) }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Short Description</label>
+            <textarea id="description" name="description" class="form-control" rows="2">{{ item.description }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="image">Image Filename</label>
+            <input type="text" id="image" name="image" class="form-control" value="{{ item.image }}" required>
+        </div>
+
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" name="available" {% if item.available %}checked{% endif %}>
+                <span>Available in stock</span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 15px; margin-top: 10px;">Update Food Item</button>
+    </form>
+</div>
+{% endblock %}

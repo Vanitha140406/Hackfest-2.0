@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Queue & Order Management - Campus Bites{% endblock %}
+
+{% block content %}
+<div style="margin-top: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+        <div>
+            <h2 class="section-heading" style="margin-bottom: 4px;">⚡ Canteen Live Queue Management</h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Real-time queue monitoring, status updates, and daily performance metrics</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('manage_food') }}" class="btn btn-outline">🍲 Manage Food Items</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn">🔄 Refresh Queue</a>
+        </div>
+    </div>
+
+    <!-- Admin Analytics Cards -->
+    <div class="admin-metrics-grid">
+        <div class="stat-card">
+            <div class="stat-icon orange">📊</div>
+            <div class="stat-info">
+                <div class="stat-val">{{ stats.today_orders }}</div>
+                <div class="stat-lbl">Today's Orders</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon amber">🟡</div>
+            <div class="stat-info">
+                <div class="stat-val">{{ stats.pending_orders }}</div>
+                <div class="stat-lbl">Pending Queue</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon blue">🟠</div>
+            <div class="stat-info">
+                <div class="stat-val">{{ stats.preparing_orders }}</div>
+                <div class="stat-lbl">Preparing Now</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon green">🟢</div>
+            <div class="stat-info">
+                <div class="stat-val">{{ stats.ready_orders }}</div>
+                <div class="stat-lbl">Ready for Pickup</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon purple">💰</div>
+            <div class="stat-info">
+                <div class="stat-val">₹{{ "%.0f"|format(stats.today_revenue) }}</div>
+                <div class="stat-lbl">Today's Revenue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Filter Buttons -->
+    <div class="category-pills" style="margin-bottom: 20px;">
+        <a href="{{ url_for('admin_dashboard', status='all') }}" class="pill-btn {% if current_filter == 'all' %}active{% endif %}">All Orders ({{ orders|length }})</a>
+        <a href="{{ url_for('admin_dashboard', status='Pending') }}" class="pill-btn {% if current_filter == 'Pending' %}active{% endif %}">Pending</a>
+        <a href="{{ url_for('admin_dashboard', status='Preparing') }}" class="pill-btn {% if current_filter == 'Preparing' %}active{% endif %}">Preparing</a>
+        <a href="{{ url_for('admin_dashboard', status='Ready') }}" class="pill-btn {% if current_filter == 'Ready' %}active{% endif %}">Ready for Pickup</a>
+        <a href="{{ url_for('admin_dashboard', status='Completed') }}" class="pill-btn {% if current_filter == 'Completed' %}active{% endif %}">Completed</a>
+    </div>
+
+    <!-- Orders Live Table -->
+    <div class="cart-table-card">
+        {% if filtered_orders %}
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Student Info</th>
+                    <th>Ordered Items</th>
+                    <th>Amount</th>
+                    <th>Pickup Preference</th>
+                    <th>Current Status</th>
+                    <th style="text-align: right;">Update Queue Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in filtered_orders %}
+                <tr>
+                    <td>
+                        <strong style="font-size: 18px; color: var(--primary);">{{ o.token_number }}</strong>
+                        <div style="font-size: 11px; color: var(--text-muted);">#{{ o.id }} • {{ o.created_at.strftime('%I:%M %p') }}</div>
+                    </td>
+                    <td>
+                        <strong>{{ o.student_name or 'Student' }}</strong>
+                        {% if o.student_phone %}
+                            <div style="font-size: 12px; color: var(--text-muted);">📞 {{ o.student_phone }}</div>
+                        {% endif %}
+                    </td>
+                    <td style="max-width: 280px; font-size: 14px;">{{ o.items_summary }}</td>
+                    <td><strong style="color: var(--secondary);">₹{{ "%.0f"|format(o.total_price) }}</strong></td>
+                    <td style="font-size: 13px;">{{ o.pickup_time }}</td>
+                    <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
+                    <td style="text-align: right;">
+                        <div style="display: inline-flex; gap: 6px;">
+                            {% if o.status != 'Preparing' and o.status != 'Completed' %}
+                                <a href="{{ url_for('update_status', order_id=o.id, status='Preparing') }}" class="btn" style="background:#3b82f6; font-size:12px; padding:6px 10px;" title="Mark as Preparing">Preparing</a>
+                            {% endif %}
+                            {% if o.status != 'Ready' and o.status != 'Completed' %}
+                                <a href="{{ url_for('update_status', order_id=o.id, status='Ready') }}" class="btn" style="background:#10b981; font-size:12px; padding:6px 10px;" title="Mark as Ready">Ready</a>
+                            {% endif %}
+                            {% if o.status != 'Completed' %}
+                                <a href="{{ url_for('update_status', order_id=o.id, status='Completed') }}" class="btn" style="background:#64748b; font-size:12px; padding:6px 10px;" title="Mark as Completed">Complete</a>
+                            {% else %}
+                                <span style="font-size: 12px; color: #94a3b8;">Done</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+            <div style="font-size: 35px; margin-bottom: 8px;">📋</div>
+            <h4>No orders in this status category</h4>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

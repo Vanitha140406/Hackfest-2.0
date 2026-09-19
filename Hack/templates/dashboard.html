@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Campus Bites{% endblock %}
+
+{% block content %}
+<div style="margin-top: 15px;">
+    <!-- Welcome Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+        <div>
+            <h1 style="font-size: 26px; font-weight: 800;">Welcome back, {{ current_user.full_name or current_user.username }}! 👋</h1>
+            <p style="color: var(--text-muted); font-size: 14px;">Track active tokens and view your campus food orders</p>
+        </div>
+        <div>
+            <a href="{{ url_for('menu') }}" class="btn">+ Order Food Now</a>
+        </div>
+    </div>
+
+    <!-- Student Metric Cards -->
+    <div class="admin-metrics-grid">
+        <div class="stat-card">
+            <div class="stat-icon orange">🎫</div>
+            <div class="stat-info">
+                <div class="stat-val">
+                    {% if active_order %}
+                        {{ active_order.token_number }}
+                    {% else %}
+                        None
+                    {% endif %}
+                </div>
+                <div class="stat-lbl">Active Order</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon blue">⏳</div>
+            <div class="stat-info">
+                <div class="stat-val">
+                    {% if active_order %}
+                        #{{ queue_position }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+                <div class="stat-lbl">Queue Position</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon amber">🕒</div>
+            <div class="stat-info">
+                <div class="stat-val">
+                    {% if active_order and active_order.status in ['Pending', 'Preparing'] %}
+                        {{ waiting_time }}m
+                    {% elif active_order and active_order.status == 'Ready' %}
+                        Ready!
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+                <div class="stat-lbl">Estimated Wait</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon green">📦</div>
+            <div class="stat-info">
+                <div class="stat-val">{{ total_orders_count }}</div>
+                <div class="stat-lbl">Total Orders Placed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Order Spotlight Card -->
+    {% if active_order %}
+    <div class="cart-table-card" style="border: 2px solid var(--primary); margin-bottom: 30px; background: #fffaf5;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <span class="badge badge-{{ active_order.status }}" style="font-size: 13px; margin-bottom: 6px;">{{ active_order.status }}</span>
+                <h3 style="font-size: 20px; font-weight: 800;">Active Token: {{ active_order.token_number }}</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">{{ active_order.items_summary }}</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 8px;">₹{{ "%.0f"|format(active_order.total_price) }}</div>
+                <a href="{{ url_for('track_order', order_id=active_order.id) }}" class="btn">Track Live Status →</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Orders Table -->
+    <div class="cart-table-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h3 style="font-size: 18px;">Recent Orders</h3>
+            <a href="{{ url_for('order_history') }}" style="color: var(--primary); font-size: 13px; font-weight: 600; text-decoration: none;">View All History →</a>
+        </div>
+
+        {% if recent_orders %}
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Date & Time</th>
+                    <th>Items Summary</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in recent_orders %}
+                <tr>
+                    <td><strong>{{ o.token_number }}</strong></td>
+                    <td style="color: var(--text-muted); font-size: 13px;">{{ o.created_at.strftime('%d %b, %I:%M %p') }}</td>
+                    <td style="max-width: 320px;">{{ o.items_summary }}</td>
+                    <td><strong>₹{{ "%.0f"|format(o.total_price) }}</strong></td>
+                    <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
+                    <td>
+                        <a href="{{ url_for('track_order', order_id=o.id) }}" class="btn btn-outline" style="padding: 5px 12px; font-size: 12px;">Track</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-muted); text-align: center; padding: 30px 0;">No orders placed yet. <a href="{{ url_for('menu') }}" style="color: var(--primary);">Start ordering now!</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

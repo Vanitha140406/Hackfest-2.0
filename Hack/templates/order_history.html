@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}My Order History - Campus Bites{% endblock %}
+
+{% block content %}
+<div style="margin-top: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 class="section-heading" style="margin-bottom: 0;">📋 My Order History</h2>
+        <a href="{{ url_for('menu') }}" class="btn">+ New Order</a>
+    </div>
+
+    <div class="cart-table-card">
+        {% if orders %}
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Date & Time</th>
+                    <th>Items</th>
+                    <th>Pickup Option</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in orders %}
+                <tr>
+                    <td><strong style="color: var(--primary); font-size: 15px;">{{ o.token_number }}</strong></td>
+                    <td style="color: var(--text-muted); font-size: 13px;">{{ o.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                    <td style="max-width: 300px;">{{ o.items_summary }}</td>
+                    <td style="font-size: 13px;">{{ o.pickup_time }}</td>
+                    <td><strong style="color: var(--secondary);">₹{{ "%.0f"|format(o.total_price) }}</strong></td>
+                    <td><span class="badge badge-{{ o.status }}">{{ o.status }}</span></td>
+                    <td>
+                        <a href="{{ url_for('track_order', order_id=o.id) }}" class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;">View Order</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">📦</div>
+            <h3>No past orders found</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">You have not placed any canteen orders yet.</p>
+            <a href="{{ url_for('menu') }}" class="btn">Explore Canteen Menu</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Your Food Cart - Campus Bites{% endblock %}
+
+{% block content %}
+<div style="margin-top: 10px;">
+    <h2 class="section-heading">🛒 Your Food Cart</h2>
+
+    {% if items %}
+    <div class="cart-layout">
+        <!-- Cart Items Table -->
+        <div class="cart-table-card">
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Food Item</th>
+                        <th>Price</th>
+                        <th style="text-align: center;">Quantity</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in items %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="{{ url_for('static', filename='images/' + entry.food.image) }}" alt="{{ entry.food.name }}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px;">
+                                <div>
+                                    <strong style="font-size: 15px;">{{ entry.food.name }}</strong>
+                                    <div style="font-size: 12px; color: var(--text-muted);">{{ entry.food.category }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>₹{{ "%.0f"|format(entry.food.price) }}</td>
+                        <td style="text-align: center;">
+                            <div class="qty-control">
+                                <a href="{{ url_for('update_cart', item_id=entry.food.id, action='decrease') }}" class="qty-btn" title="Decrease">−</a >
+                                <span class="qty-val">{{ entry.qty }}</span>
+                                <a href="{{ url_for('update_cart', item_id=entry.food.id, action='increase') }}" class="qty-btn" title="Increase">+</a>
+                            </div>
+                        </td>
+                        <td><strong style="color: var(--secondary);">₹{{ "%.0f"|format(entry.subtotal) }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('update_cart', item_id=entry.food.id, action='remove') }}" class="remove-btn" title="Remove item">🗑️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <a href="{{ url_for('menu') }}" class="btn btn-outline">← Add More Items</a>
+                <a href="{{ url_for('clear_cart') }}" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear your cart?');">Clear Cart</a>
+            </div>
+        </div>
+
+        <!-- Order Summary Card -->
+        <div class="cart-summary-card">
+            <h3>Order Summary</h3>
+            <div class="summary-row">
+                <span style="color: var(--text-muted);">Total Items:</span>
+                <strong>{{ total_qty }} items</strong>
+            </div>
+            <div class="summary-row">
+                <span style="color: var(--text-muted);">Kitchen Queue:</span>
+                <span>Active</span>
+            </div>
+            <div class="summary-row">
+                <span style="color: var(--text-muted);">Payment Mode:</span>
+                <span>Counter Pay (Cash/UPI)</span>
+            </div>
+            <div class="summary-row total-row">
+                <span>Grand Total:</span>
+                <span style="color: var(--primary);">₹{{ "%.0f"|format(total) }}</span>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <a href="{{ url_for('checkout') }}" class="btn" style="width: 100%; padding: 14px; font-size: 16px;">Proceed to Checkout →</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 70px 20px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); margin-top: 20px;">
+        <div style="font-size: 50px; margin-bottom: 12px;">🛒</div>
+        <h3 style="font-size: 20px; margin-bottom: 8px;">Your cart is empty!</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Looks like you haven't added any yummy canteen food yet.</p>
+        <a href="{{ url_for('menu') }}" class="btn" style="padding: 12px 24px;">Browse Indian Food Menu</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

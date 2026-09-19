@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Live Order Tracking - Token {{ order.token_number }} - Campus Bites{% endblock %}
+
+{% block extra_head %}
+<!-- Auto refresh every 5 seconds until Completed -->
+{% if order.status != 'Completed' %}
+<meta http-equiv="refresh" content="5">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="tracking-wrapper">
+    <!-- Hero Token Card -->
+    <div class="token-hero-card">
+        <div class="token-label">CANTEEN ORDER TOKEN</div>
+        <div class="token-number">{{ order.token_number }}</div>
+
+        <div style="font-size: 15px; color: var(--text-muted); margin-bottom: 10px;">
+            Order #{{ order.id }} • Placed on {{ order.created_at.strftime('%I:%M %p') }}
+        </div>
+
+        <!-- Dynamic Waiting Metrics -->
+        {% if order.status in ['Pending', 'Preparing'] %}
+        <div class="queue-metrics-bar">
+            <div class="metric-item">
+                <div class="val">{{ queue_position }}</div>
+                <div class="lbl">Queue Position</div>
+            </div>
+            <div class="metric-item">
+                <div class="val">{{ waiting_time }} mins</div>
+                <div class="lbl">Estimated Wait Time</div>
+            </div>
+        </div>
+        <p style="font-size: 13px; color: #9a3412;">
+            ⏳ <strong>{{ orders_ahead }}</strong> order(s) ahead in kitchen queue (~3 mins per order)
+        </p>
+        {% elif order.status == 'Ready' %}
+        <div id="readyCalloutBanner" class="ready-callout-banner">
+            🎉 Your order is READY! Please collect it from the canteen counter now.
+        </div>
+        {% elif order.status == 'Completed' %}
+        <div style="background: #f1f5f9; color: #475569; padding: 14px; border-radius: 8px; font-weight: 700; margin: 15px 0;">
+            ✅ Order Completed & Collected. Enjoy your food!
+        </div>
+        {% endif %}
+
+        <!-- 4-Step Visual Progress Stepper -->
+        <div class="stepper">
+            <!-- Stepper line width calculation: 0%, 33%, 66%, 100% -->
+            {% set pct = 0 %}
+            {% if order.status == 'Pending' %}{% set pct = 12 %}
+            {% elif order.status == 'Preparing' %}{% set pct = 45 %}
+            {% elif order.status == 'Ready' %}{% set pct = 78 %}
+            {% elif order.status == 'Completed' %}{% set pct = 100 %}
+            {% endif %}
+            <div class="stepper-progress" style="width: {{ pct }}%;"></div>
+
+            <!-- Step 1: Placed -->
+            <div class="step {% if order.status in ['Pending', 'Preparing', 'Ready', 'Completed'] %}completed{% endif %}">
+                <div class="step-circle">🟡</div>
+                <span class="step-text">Order Placed</span>
+            </div>
+
+            <!-- Step 2: Preparing -->
+            <div class="step {% if order.status in ['Preparing', 'Ready', 'Completed'] %}completed{% elif order.status == 'Pending' %}active{% endif %}">
+                <div class="step-circle">🟠</div>
+                <span class="step-text">Preparing</span>
+            </div>
+
+            <!-- Step 3: Ready -->
+            <div class="step {% if order.status in ['Ready', 'Completed'] %}completed{% elif order.status == 'Preparing' %}active{% endif %}">
+                <div class="step-circle">🟢</div>
+                <span class="step-text">Ready</span>
+            </div>
+
+            <!-- Step 4: Completed -->
+            <div class="step {% if order.status == 'Completed' %}completed{% endif %}">
+                <div class="step-circle">✅</div>
+                <span class="step-text">Completed</span>
+            </div>
+        </div>
+
+        {% if order.status != 'Completed' %}
+        <small style="color: #94a3b8; display: block; margin-top: 10px;">
+            🔄 Status auto-refreshes every 5 seconds. Keep this page open!
+        </small>
+        {% endif %}
+    </div>
+
+    <!-- Order Items & QR Code Section -->
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+        <!-- Items details -->
+        <div class="cart-table-card">
+            <h3 style="margin-bottom: 12px; font-size: 16px;">Order Details</h3>
+            <p style="font-size: 14px; margin-bottom: 8px;"><strong>Student:</strong> {{ order.student_name or current_user.username }}</p>
+            <p style="font-size: 14px; margin-bottom: 8px;"><strong>Pickup:</strong> {{ order.pickup_time }}</p>
+            <p style="font-size: 14px; margin-bottom: 8px;"><strong>Payment:</strong> {{ order.payment_method }}</p>
+            
+            <div style="border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px;">
+                <strong>Items:</strong>
+                <p style="color: var(--text-main); font-size: 14px; margin-top: 4px; line-height: 1.6;">
+                    {{ order.items_summary }}
+                </p>
+                <div style="margin-top: 12px; font-size: 18px; font-weight: 800; color: var(--primary);">
+                    Total: ₹{{ "%.0f"|format(order.total_price) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code for Counter Verification -->
+        <div class="qr-card">
+            <h4 style="font-size: 15px; margin-bottom: 4px;">Counter QR Pass</h4>
+            <p style="font-size: 12px; color: var(--text-muted);">Show this QR code at the counter for quick pickup</p>
+            {% if qr_code_b64 %}
+                <img src="data:image/png;base64,{{ qr_code_b64 }}" alt="Token QR Code">
+            {% endif %}
+            <div style="font-size: 14px; font-weight: 800; color: var(--secondary);">
+                {{ order.token_number }}
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 25px; display: flex; justify-content: space-between; gap: 15px;">
+        <a href="{{ url_for('menu') }}" class="btn btn-outline">← Back to Menu</a>
+        <a href="{{ url_for('order_history') }}" class="btn btn-secondary">View All Orders</a>
+    </div>
+</div>
+{% endblock %}

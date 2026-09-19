@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout & Confirm Order - Campus Bites{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 20px auto;">
+    <h2 class="section-heading">🧾 Order Checkout</h2>
+
+    <div class="cart-layout" style="grid-template-columns: 1.2fr 1fr;">
+        <!-- Student Details Form -->
+        <div class="cart-table-card">
+            <h3 style="margin-bottom: 18px; font-size: 18px;">1. Student & Pickup Details</h3>
+            <form method="POST" action="{{ url_for('checkout') }}">
+                <div class="form-group">
+                    <label for="student_name">Student Name</label>
+                    <input type="text" id="student_name" name="student_name" class="form-control" value="{{ current_user.full_name or current_user.username }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="username_disp">Roll No / Username</label>
+                    <input type="text" id="username_disp" class="form-control" value="{{ current_user.username }}" disabled style="background:#f1f5f9; color:#64748b;">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number (For pickup notifications)</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" value="{{ current_user.phone or '' }}" placeholder="10-digit mobile number">
+                </div>
+
+                <div class="form-group">
+                    <label for="pickup_time">Pickup Preference</label>
+                    <select id="pickup_time" name="pickup_time" class="form-control" required>
+                        <option value="ASAP" selected>⚡ ASAP (As soon as prepared)</option>
+                        <option value="In 15 mins">🕒 In 15 minutes (Next short break)</option>
+                        <option value="In 30 mins">🕒 In 30 minutes (Period end)</option>
+                        <option value="Lunch Break">🍱 Lunch Break (1:00 PM)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 20px;">
+                    <label style="margin-bottom: 4px; font-weight: 700;">Payment Method</label>
+                    <div style="display: flex; align-items: center; gap: 8px; color: #047857; font-weight: 600;">
+                        <span>💵</span> Pay at Canteen Counter (Cash / UPI on token pickup)
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 4px;">No upfront card required for campus pre-orders.</small>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; padding: 14px; font-size: 16px; margin-top: 15px;">Confirm Order & Generate Token →</button>
+            </form>
+        </div>
+
+        <!-- Order Items Summary -->
+        <div class="cart-summary-card">
+            <h3 style="margin-bottom: 15px; font-size: 18px;">2. Order Summary</h3>
+            <div style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;">
+                {% for entry in items %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px;">
+                    <div>
+                        <strong>{{ entry.food.name }}</strong>
+                        <div style="color: var(--text-muted); font-size: 12px;">Qty: {{ entry.qty }} × ₹{{ "%.0f"|format(entry.food.price) }}</div>
+                    </div>
+                    <strong style="color: var(--secondary);">₹{{ "%.0f"|format(entry.subtotal) }}</strong>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="summary-row">
+                <span style="color: var(--text-muted);">Total Items:</span>
+                <strong>{{ total_qty }}</strong>
+            </div>
+            <div class="summary-row total-row">
+                <span>Total Amount:</span>
+                <span style="color: var(--primary);">₹{{ "%.0f"|format(total) }}</span>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="{{ url_for('cart') }}" style="color: var(--text-muted); font-size: 13px; text-decoration: none;">← Edit items in cart</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

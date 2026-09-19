@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Today's Special Offer - Admin - Campus Bites{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 550px;">
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('manage_food') }}" style="color: var(--text-muted); text-decoration: none; font-size: 13px;">← Back to Food Catalog</a>
+        <h2 style="font-size: 22px; font-weight: 800; margin-top: 8px;">Edit Today's Special Offer</h2>
+        <p style="color: var(--text-muted); font-size: 14px;">Showcase a featured combo or discounted canteen deal</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('edit_special') }}">
+        <div class="form-group">
+            <label for="title">Offer Title</label>
+            <input type="text" id="title" name="title" class="form-control" value="{{ special_offer.title if special_offer else 'Combo: Samosa + Tea' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Offer Description</label>
+            <textarea id="description" name="description" class="form-control" rows="2" required>{{ special_offer.description if special_offer else 'Hot crispy potato samosa served with special masala chai' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="price">Combo Price (₹)</label>
+            <input type="number" step="1" min="1" id="price" name="price" class="form-control" value="{{ "%.0f"|format(special_offer.price) if special_offer else 25 }}" required>
+        </div>
+
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" name="active" {% if special_offer and special_offer.active %}checked{% endif %}>
+                <span>Display on Home & Menu Page</span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 15px; margin-top: 10px;">Save Special Offer</button>
+    </form>
+</div>
+{% endblock %}
